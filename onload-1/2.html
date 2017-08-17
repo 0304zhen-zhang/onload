@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+	    <title>Title</title>
+	    
+	    <script src="out/jquery-1.10.1.min.js"></script>
+	    <script src="out/iscroll.js"></script>
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	    <style type="text/css">
+		    * {
+	            margin: 0;
+	            padding: 0;
+	        }
+	        #pullDown {
+	            height: 18px;
+	            line-height: 18px;
+	        }
+	        #container li{
+	            line-height: 30px;
+	        }
+	    </style>
+	</head>
+	<body>
+		<div id="container">
+		    <div id="wrapper">
+		        <div id="pullDown">下拉刷新。。。</div>
+		        <ul id="news-list">
+		            <li>这是第1条新闻！！！</li>
+		            <li>这是第2条新闻！！！</li>
+		            <li>这是第3条新闻！！！</li>
+		            <li>这是第4条新闻！！！</li>
+		            <li>这是第5条新闻！！！</li>
+		            
+		        </ul>
+		        <div id="pullUp">上拉加载。。。</div>
+		    </div>
+		</div>
+		<script>
+				var oPullDown=$('#pullDown');
+                var oPullUp=$('#pullUp');
+                var oContainer=$('#container');
+                var oNews=$('#news-list');
+				var myscroll = new iScroll("wrapper",{
+					onScrollMove:function(){
+						if(this.y>5 && !oPullDown.hasClass('active')){
+	                            oPullDown.addClass('active').html('松开手刷新页面');
+	                             this.minScrollY=0;
+	                        }else if(this.y<5 && oPullDown.hasClass('active')){
+	                            oPullDown.removeClass('active').html('下拉刷新！');
+	                            this.minScrollY=-oPullDown.height();
+	                        }else if(this.y<this.maxScrollY&& !oPullUp.hasClass('active')){
+	                            oPullUp.addClass('active').html('松开手加载');
+	                        }else if(this.y>=this.maxScrollY && oPullUp.hasClass('active')){
+	                            oPullUp.removeClass('active').html('上啦加载！');
+	                        }
+					},
+					onScrollEnd:function(){
+						if ($('.pull_icon').hasClass('flip')) {
+							$('.pull_icon').addClass('loading');
+							$('.more span').text('加载中...');
+							pullUpAction();
+						}
+						
+					},
+					onRefresh:function(){
+						$('.more').removeClass('flip');
+						$('.more span').text('上拉加载...');
+					}
+					
+				});
+			
+		</script>
+	</body>
+</html>

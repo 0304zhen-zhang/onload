@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="out/animate.min.css">
+    <link rel="stylesheet" href="out/swiper-3.3.1.min.css">
+    <script src="out/jquery-1.10.1.min.js"></script>
+    <script src="out/iscroll.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        ul {
+            list-style: none;
+        }
+        #container {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -9999px;
+            width: 100%;
+        }
+        #pullDown {
+            height: 18px;
+            line-height: 18px;
+        }
+        #container li{
+            line-height: 30px;
+        }
+    </style>
+    
+</head>
+<body>
+<div id="container">
+    <div id="wrapper">
+        <div id="pullDown">下拉刷新。。。</div>
+        <ul id="news-list">
+            <li>这是第1条新闻！！！</li>
+            <li>这是第2条新闻！！！</li>
+            <li>这是第3条新闻！！！</li>
+            <li>这是第4条新闻！！！</li>
+            <li>这是第5条新闻！！！</li>
+            
+        </ul>
+        <div id="pullUp">上拉加载。。。</div>
+    </div>
+</div>
+</body>
+<script>
+        window.onload=function(){
+            var
+                    oNews=null,
+                    oContainer=null,
+                    oScarll=null,
+                    oPullDown=null,
+                    oPullUp=null;
+            setTimeout(function(){
+                oPullDown=$('#pullDown');
+                oPullUp=$('#pullUp');
+                oContainer=$('#container');
+                oNews=$('#news-list');
+                oScarll = new iScroll(("container"),{
+                    //去掉上下滚动条
+                    hScrollbar:false,
+                    vScrollbar:false,
+
+                    //隐藏下拉出现的提示语  通过topOffset参数属性设置IScroll已经滚动的基准值
+                    topOffset:oPullDown.height(),
+
+					//通过onScrollMove参数方法判断当前滚动是到顶端还是底端
+                    onScrollMove:function(){
+                        if(this.y>5 && !oPullDown.hasClass('active')){
+                            oPullDown.addClass('active').html('松开手刷新页面');
+                             this.minScrollY=0;
+                        }else if(this.y<5 && oPullDown.hasClass('active')){
+                            oPullDown.removeClass('active').html('下拉刷新！');
+                            this.minScrollY=-oPullDown.height();
+                        }else if(this.y<this.maxScrollY&& !oPullUp.hasClass('active')){
+                            oPullUp.addClass('active').html('松开手加载');
+                        }else if(this.y>=this.maxScrollY && oPullUp.hasClass('active')){
+                            oPullUp.removeClass('active').html('上啦加载！');
+                        }
+
+                    },
+                    //通过onScrollEnd参数方法触发加载新数据，再通过refresh方法重新渲染界面
+                    onScrollEnd:function(){
+                        if(oPullDown.hasClass('active')){
+                            oPullDown.html('Loding....');
+                            pullDownDate();
+                        }else if(oPullUp.hasClass('active')){
+                            oPullUp.html('Loding....');
+                            pullUpDate();
+                        }
+
+                    },
+                    //通过onRefresh参数方法调整刷新后的界面结构
+                    onRefresh:function(){
+                        if(oPullDown.hasClass('active')){
+                            oPullDown.removeClass('active').html('下拉刷新！')
+                        }else if(oPullUp.hasClass('active')){
+                            oPullUp.removeClass('active').html('上拉加载！')
+                        }
+
+                    }
+
+
+                });
+                //延迟出现，取消动画
+                setTimeout(function(){
+                    oContainer.css({left:0})
+                },300);
+            },100);
+
+            //下拉刷新数据
+            function pullDownDate(){
+                $.ajax({
+                    url:'http://localhost/sns.php',
+                    dataType:'json',
+                    success:function(data){
+                        data.forEach(function(v,k){
+                            oNews.prepend('<li><img src="'+ v.url+'"><strong>'+v.title+'</strong></li>')
+                        });
+                        oScarll.refresh();
+                    }
+                })
+            }
+            //下拉
+            /*function pullUpDate(){
+                $.ajax({
+                    url:'http://localhost/sns.php',
+                    dataType:'json',
+                    success:function(data){
+                        data.forEach(function(v,k){
+                            oNews.append('<li><img src="'+ v.url+'"><strong>'+v.title+'</strong></li>')
+                        });
+                        oScarll.refresh();
+                    }
+                })
+            }*/
+            var num=1;
+            function pullUpDate(){
+                $.ajax({
+                    url:'https://s.m.taobao.com/search?event_submit_do_new_search_auction=1&_input_charset=utf-8&topSearch=1&atype=b&searchfrom=1&action=home%3Aredirect_app_action&from=1&sst=1&n=20&buying=buyitnow&m=api4h5&abtest=16&wlsort=16&style=list&closeModues=nav%2Cselecthot%2Conesearch&page='+ num +" ' ",
+                    dataType:'jsonp',
+                    jsonp: 'callback',
+                    success: function (data) {
+                        str1 = '';
+                        for(var i=0;i<data.listItem.length;i++){
+                            str1+='<li><div><img src="'+data.listItem[i].pic_path+'" alt="" class="tu"></div><div><p class="title">'+data.listItem[i].title+'</p><p><span><em>￥</em><i class="prece">'+data.listItem[i].price+'</i></span><span>￥<em></em><i class="prece1">199</i></span></p> <p>2折</p><p class="iconfont add">&#xe615;</p></div></li>';
+
+                        /*
+                         str1+='<li><div class="img"><img class="imgs" src="'+data.listItem[i].pic_path+'" alt=""></div><div class="key"><div class="key1"><p class="namep">'+data.listItem[i].title+'</p><p><span>￥<b class="maneyp">'+data.listItem[i].price+'</b></span><em>￥28800</em></p><p>0折</p><div class="buy iconfont">&#xe600;</div> </div></li>'
+
+                        */
+
+
+
+
+                        }
+                        oNews.append(str1);
+                        oScarll.refresh();
+                    }
+                })
+            }
+        }
+    </script>
+</html>
